@@ -15,24 +15,31 @@
 	<div>
 		<form method="post" action="/Catalog/Import" enctype="multipart/form-data">
 			<input type="hidden" asp-for="@Model.Id" name="id" />
+			<div>
 			<input type="text" name="path" />
 			<input type="submit" value="Імпортувати директорію" />
+			<p>Введіть повний шлях до папки, яку бажаєте імпортувати</p>
+			</div>
 		</form>
 	</div>
-	<div>
-		
+	
+		<div>
 			<form method="post" action="/Catalog/ExportFile" enctype="multipart/form-data">
 				<input type="submit"  value="Експорт файлу">
 				<input type="hidden"  asp-for="@Model.Id" name="id">
 			</form>
-		
+			<p>Примітка: Файл експортується до папки Downloads</p>
+		</div>
+		<div class="mt-4">
 		<form method="post" action="/Catalog/ImportFile" enctype="multipart/form-data">
 			<input type="hidden" asp-for="@Model.Id" name="id" />
 			
 			<input type="file" asp-for="@Model.Name" name="file">
-			<input type="submit" value="Імпортувати файл" />
+			<input type="submit"  value="Імпортувати файл" />
 		</form>
-	</div>
+		<p>Виберіть файл з якого бажаєте імпортувати дані в даний каталог: @Model.Name</p>
+		</div>
+	
 	@if (!string.IsNullOrEmpty(ViewBag.ErrorMessage))
 	{
 		<div a class="alert alert-danger">@ViewBag.ErrorMessage</div>
@@ -40,5 +47,6 @@
 	@if (!string.IsNullOrEmpty(ViewBag.Export))
 	{
 		<div a class="alert alert-primary">@ViewBag.Export</div>
+		
 	}
 </div>

@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text;
 
 namespace GFL.NET.Controllers
 {
@@ -29,7 +30,8 @@ namespace GFL.NET.Controllers
 		}
 
 		public IActionResult Catalog(int id)
-		{
+		{	
+
 			all = _catalogRepository.GetAll(null);
 			if(id ==0)
 			{
@@ -42,7 +44,7 @@ namespace GFL.NET.Controllers
 			ViewBag.Childs = Childs;
 
 			ViewBag.ErrorMessage = TempData["errorMessage"] as string;
-			ViewBag.Export = TempData["export"] as string;
+			
 
 			return View(model);
 		}
@@ -98,25 +100,27 @@ namespace GFL.NET.Controllers
 		[HttpPost]
 		public IActionResult ExportFile(int id)
 		{
+
+			
 			all = _catalogRepository.GetAll(id);
 
 			var fileName = "BD.txt";
-			var path = Path.Combine(@"C:\Users\Steklyashka\Downloads", fileName);
-
+			var path = Path.Combine(Path.GetTempPath(), fileName);
+			var innerData = new StringBuilder();
 
 			using (var streamWriter = new StreamWriter(path))
 			{
 				foreach (var catalog in all)
 				{
 					// Записываем в файл каждую запись в формате "Id	Name	ParentId"
-					streamWriter.WriteLine($"{catalog.Id},{catalog.Name},{(catalog.ParentId.HasValue ? catalog.ParentId.Value.ToString() : "NULL")}");
+					innerData.Append($"{catalog.Id},{catalog.Name},{(catalog.ParentId.HasValue ? catalog.ParentId.Value.ToString() : "NULL")}\n");
 				}
 			}
 			TempData["export"] = $"Файл {fileName} успешно экспортирован в папку Downloads";
 
 
 
-			return RedirectToAction("Catalog");
+			return File(Encoding.UTF8.GetBytes(innerData.ToString()),"text/plain", fileName);
 		}
 
 		public IActionResult ImportFile(IFormFile file, int id)
@@ -132,9 +136,11 @@ namespace GFL.NET.Controllers
 			List<CatalogModel> list = new List<CatalogModel>();
 			try
 			{
-				var path = Path.Combine(@"C:\Users\Steklyashka\Downloads", file.FileName);
 
-				using (StreamReader stream = new StreamReader(path))
+				var downloadsFolderPath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+				downloadsFolderPath = Path.Combine(downloadsFolderPath, "Downloads");
+				var filePath = Path.Combine(downloadsFolderPath, file.FileName);
+				using (StreamReader stream = new StreamReader(filePath))
 				{
 					string line = null;
 					while ((line = stream.ReadLine()) != null)
